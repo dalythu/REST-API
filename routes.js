@@ -3,9 +3,11 @@
 const express = require('express');
 
 const { asyncHandler } = require('./middleware/async-handler');
+const { authenticateUser } = require('./middleware/auth-user');
 const User = require('./models').User;
 const Course = require ('./models').Course;
-const { authenticateUser } = require('./middleware/auth-user');
+const bcrypt = require('bcryptjs'); // used for password hashing 
+
 
 // Construct a router instance.
 const router = express.Router();
@@ -25,7 +27,9 @@ User Routes
 //POST route that creates a new user.
 router.post('/users', asyncHandler(async (req, res) => {
     try {
-        await User.create(req.body);
+        const user = req.body;
+        if(user.password){user.password = await bcrypt.hash(user.password, 10);}
+        await User.create(user);
         res.status(201).json({ "message": "Account successfully created!" });
     } catch (error) {
         console.log('ERROR: ', error.name);
@@ -34,7 +38,7 @@ router.post('/users', asyncHandler(async (req, res) => {
             const errors = error.errors.map(err => err.message);
             res.status(400).json({ errors });   
         } else {
-        throw error;
+            throw error;
         }
     }
 }));
@@ -42,6 +46,7 @@ router.post('/users', asyncHandler(async (req, res) => {
 /*
 Course Routes
 */
+
 // Get route that returns all courses and the user
 router.get('/courses', asyncHandler(async (req, res) => {
     let courses = await Course.findAll({
@@ -58,7 +63,11 @@ router.get('/courses', asyncHandler(async (req, res) => {
             exclude: ['createdAt', 'updatedAt']
         }
     });
-    res.status(200).json(courses);
+    if (courses){
+        res.status(200).json(courses);
+   } else {
+       res.status(400).json({message: "No courses could be found"})
+   }
 }));
 
 //GET route that will return a corresponding course
@@ -85,8 +94,7 @@ router.get('/courses/:id', asyncHandler(async (req, res) => {
 router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {
     try {
         const course = await Course.create(req.body);
-        res.location(`/courses/${course.id}`);
-        res.status(201).end();
+        res.location(`/courses/${course.id}`).status(201).end();
     } catch (error) {
         console.log('ERROR: ', error.name);
         if (error.name === 'SequelizeValidationError') {
@@ -99,8 +107,44 @@ router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {
 }));
 
 //PUT route that will update the corresponding course
+router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
+    const course = req.body;
+    const clientUser = req.currentUser.id;
+    try {
+        if(req.currentUser.id) {
+            const courseOwner = await Course.findByPk(req.params.id).userId;
+             if(clientUser == courseOwner){
+                 await Course.update(course, {where: { id: req.params.id}})
+                res.status(204).end();
+            } else {
+                res.status(403).json({message: "You are not authourized to modify this course."});
+            }
+        }
+    } catch (error) {
+        console.log('ERROR: ', error.name);
+        if (error.name === 'SequelizeValidationError') {
+            const errors = error.errors.map(err => err.message);
+            res.status(400).json({errors});
+        } else {
+            throw error;
+        }
+    }
+}));
 
+// Delete Route that will delete a course
+router.delete('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
+    const clientUser = req.currentUser.dataValues.id;
+    if(clientUser) {
+        const courseOwner = await Course.findByPk(req.params.id).userId;
+         if(clientUser == courseOwner){
+            await courseToDelete.destroy();
+            res.status(204).end();
+        } else {
+            res.status(403).json({message: "You are not authourized to modify this course."});
+        }
+    } else {
+        res.status(403).json({message: "You are not authourized to modify this course."});
+    }
+}));
 
-
-
-  module.exports = router;
+module.exports = router;
