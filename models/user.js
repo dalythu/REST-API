@@ -1,32 +1,35 @@
 'use strict';
-const { Model, DataTypes } = require('sequelize');
+const {
+  Model,
+  DataTypes
+} = require('sequelize');
 
 module.exports = (sequelize) => {
   class User extends Model {}
   User.init({
     firstName: {
       type: DataTypes.STRING,
-      allowNull: false, 
+      allowNull: false,
       validate: {
         notNull: {
           msg: 'A first name is required'
-        }, 
+        },
         notEmpty: {
           msg: 'Please provide a first name'
         }
       }
     },
     lastName: {
-        type: DataTypes.STRING,
-        allowNull: false, 
-        validate: {
-          notNull: {
-            msg: 'A last name is required'
-          }, 
-          notEmpty: {
-            msg: 'Please provide a last name'
-          }
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'A last name is required'
+        },
+        notEmpty: {
+          msg: 'Please provide a last name'
         }
+      }
     },
     emailAddress: {
       type: DataTypes.STRING,
@@ -37,34 +40,32 @@ module.exports = (sequelize) => {
       validate: {
         notNull: {
           msg: 'An email is required'
-        }, 
+        },
         isEmail: {
           msg: 'Please provide a valid email'
         }
-      }    
+      }
     },
     password: {
-      type: DataTypes.STRING, 
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notNull: {
           msg: 'A password is required'
-        }, 
+        },
         notEmpty: {
           msg: 'Please provide a password'
-        }, 
-        len: {
-          args: [8, 20], //array signifying required length 
-          msg: 'The password should be between 8 and 20 characters in length'
         }
       }
     },
-  }, { sequelize });
+  }, {
+    sequelize
+  });
 
-  // Associations between course and user models 
+  // Associations between user and course models 
   User.associate = (models) => { //tells Sequelize that a user can be associated with one or more courses
     User.hasMany(models.Course, {
-      as: 'user', 
+      as: 'user',
       foreignKey: {
         fieldName: 'userId',
         allowNull: false,

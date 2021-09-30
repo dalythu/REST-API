@@ -18,28 +18,16 @@ module.exports = (sequelize) => {
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: 'A course description is required'
-        }, 
-        notEmpty: {
-          msg: 'Please provide a course description'
-        }
-      }
+      allowNull: true
     },
     estimatedTime: {
         type: DataTypes.STRING,
-        allowNull: false,    
-        validate: {
-          notNull: {
-            msg: 'An estimated time is are required'
-          }, 
-          notEmpty: {
-            msg: 'Please provide an estimated time'
-          }
-        }
-      },
+        allowNull: true
+    },
+      materialsNeeded: {
+        type: DataTypes.STRING,
+        allowNull: true
+    }
   }, { sequelize });
 
   Course.associate = (models) => {  
