@@ -12,6 +12,11 @@ const bcrypt = require('bcryptjs'); // used for password hashing
 // Construct a router instance.
 const router = express.Router();
 
+
+/*
+User Routes
+*/
+
 // GET route that returns the current authenticated user.
 router.get('/users', authenticateUser, asyncHandler(async (req, res) => { // tells express to route to users > authenticated users > async handler 
     const user = req.currentUser;
@@ -19,10 +24,6 @@ router.get('/users', authenticateUser, asyncHandler(async (req, res) => { // tel
         res.status(200).json(user);
     }
 }));
-
-/*
-User Routes
-*/
 
 //POST route that creates a new user.
 router.post('/users', asyncHandler(async (req, res) => {

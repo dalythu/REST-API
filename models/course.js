@@ -18,6 +18,7 @@ module.exports = (sequelize) => {
     },
     description: {
       type: DataTypes.TEXT,
+      allowNull: false,
       validate: {
         notNull: {
           msg: 'A course description is required'
@@ -29,6 +30,7 @@ module.exports = (sequelize) => {
     },
     estimatedTime: {
         type: DataTypes.STRING,
+        allowNull: false,    
         validate: {
           notNull: {
             msg: 'An estimated time is are required'
