@@ -18,7 +18,15 @@ module.exports = (sequelize) => {
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: "A description is require is require"
+        },
+        notEmpty: {
+          msg: "please provide a last name"
+        }
+      }
     },
     estimatedTime: {
         type: DataTypes.STRING,
